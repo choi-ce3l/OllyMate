@@ -1,6 +1,7 @@
 import requests
+import json
+import pandas as pd
 from bs4 import BeautifulSoup
-
 
 # 카테고리별 시작 URL 설정
 categories = {
@@ -54,6 +55,68 @@ all_product_urls = []
 for category, base_url in categories.items():
     all_product_urls.extend(fetch_product_urls(category, base_url))
 
-# 크롤링한 결과 출력
+all_data = []
+
 for product in all_product_urls:
-    print(product)
+    url = product['product_url']
+    res = requests.get(url).text
+    soup = BeautifulSoup(res, 'html.parser')
+
+    goodsNo = soup.select_one('button.btnZzim').attrs['data-ref-goodsno']
+    product_name = soup.select_one("p.prd_name").text
+    price = soup.select_one('span.price-2 strong').text
+    img_link = soup.select_one('img#mainImg').attrs['src']
+
+    for i in range(0, 100):
+        url = f"https://www.oliveyoung.co.kr/store/goods/getGdasNewListJson.do?goodsNo={goodsNo}&gdasSort=05&itemNo=all_search&pageIdx={i + 1}&colData=&keywordGdasSeqs=&type=&point=&hashTag=&optionValue=&cTypeLength=0"
+
+        headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+
+        res = requests.get(url, headers=headers, verify=False).text
+        res = json.loads(res)
+
+        for review_data in res["gdasList"]:
+            memberNo = review_data["memberNo"]
+            gdasContent = review_data["gdasCont"]
+            gdasValue = review_data["gdasScrVal"]
+            skintype = (
+                [item['mrkNm'] for item in review_data['addInfoNm'] if "A" in item['colDataCd']]
+                if review_data['addInfoNm'] is not None
+                else None
+            )
+            skinton = (
+                [item['mrkNm'] for item in review_data['addInfoNm'] if "B" in item['colDataCd']]
+                if review_data['addInfoNm'] is not None
+                else None
+            )
+            skinconcerns = (
+                [item['mrkNm'] for item in review_data['addInfoNm'] if "C" in item['colDataCd']]
+                if review_data['addInfoNm'] is not None
+                else None
+            )
+            date = review_data["dispRegDate"]
+
+            data = {
+                'product_name': product_name,
+                'category': product['category'],
+                'price': price,
+                'product_url': product['product_url'],
+                'img_link': img_link,
+
+                'memberNo': memberNo,
+                'skintype': skintype,
+                'skinton': skinton,
+                'skinconcerns': skinconcerns,
+
+                'goodsNo': goodsNo,
+                'gdasContent': gdasContent,
+                'gdasValue': gdasValue,
+                'date': date,
+            }
+            all_data.append(data)
+        print(f"Fetched {goodsNo}, page {i + 1}")
+
+df = pd.DataFrame(all_data)
+df.to_csv('에센스,세럼,앰플.csv', index=False, encoding='utf-8-sig')
