@@ -82,6 +82,9 @@ seaborn = "^0.13.2"
 grandalf = "^0.8"
 
 
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
