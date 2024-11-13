@@ -15,7 +15,7 @@ class FastSkincareRecommender:
         self.encoded_file = encoded_file # 인코딩 파일 저장 경로 설정
 
     def encode_features(self, save_to_file=True):
-        """특성을 인코딩하고, 필요하면 파일에 저장"""
+        """특성을 인코딩하고, 필요하면 feature_matrix 파일에 저장"""
         if os.path.exists(self.encoded_file):
             # 파일이 존재하면 불러오기
             self.encoded_features = pd.read_csv(self.encoded_file)
@@ -66,11 +66,11 @@ class FastSkincareRecommender:
         skintype_encoded = pd.get_dummies(new_data['skintype'], prefix='type')
         skinton_encoded = pd.get_dummies(new_data['skinton'], prefix='tone')
         pricecategory_encoded = pd.get_dummies(new_data['price_category'], prefix='price_category')
-        category_encoded = pd.get_dummies(self.df['category'], prefix='category')
+        category_encoded = pd.get_dummies(new_data['category'], prefix='category')
 
-        concerns_encoded = self._multi_label_encode_series(new_data['skinconcerns'], self.mlb_concerns, 'concern')
-        function_encoded = self._multi_label_encode_series(new_data['function'], self.mlb_function, 'function')
-        formulation_encoded = self._multi_label_encode_series(new_data['formulation'], self.mlb_formulation,'formulation')
+        concerns_encoded = self._multi_label_encode(new_data['skinconcerns'], self.mlb_concerns, 'concern')
+        function_encoded = self._multi_label_encode(new_data['function'], self.mlb_function, 'function')
+        formulation_encoded = self._multi_label_encode(new_data['formulation'], self.mlb_formulation,'formulation')
 
         new_encoded_features = pd.concat(
             [category_encoded, skintype_encoded, skinton_encoded, pricecategory_encoded, concerns_encoded, function_encoded,
