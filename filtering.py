@@ -44,7 +44,7 @@ class FastSkincareRecommender:
                 self.encoded_features.to_csv(self.encoded_file, index=False)
 
         # 상품명을 타깃 변수로 설정
-        self.target = self.df['product_name'].reindex(self.encoded_features.index)
+        self.target = self.df['goodsName'].reindex(self.encoded_features.index)
 
     def _multi_label_encode(self, column, mlb, prefix):
         """멀티 라벨 인코딩 처리 부분"""
@@ -123,16 +123,16 @@ recommender = FastSkincareRecommender(df)
 item_idx = 614
 recommendations = recommender.fit_and_recommend(item_idx=item_idx, n_recommendations=3)
 print("기존 데이터에서 추천합니다.:")
-for product_name, similarity in recommendations:
-    print(f"Product: {product_name}, Similarity: {similarity:.4f}")
+for goodsName, similarity in recommendations:
+    print(f"Product: {goodsName}, Similarity: {similarity:.4f}")
 
 # 새로운 유저 정보가 입력된 경우
 recommendations = recommender.fit_and_recommend(new_data=test_df, n_recommendations=3)
 print("유저 정보에 따라 추천합니다.")
-for product_name, similarity in recommendations:
-    print(f"Product: {product_name}, Similarity: {similarity:.4f}")
+for goodsName, similarity in recommendations:
+    print(f"Product: {goodsName}, Similarity: {similarity:.4f}")
 
-recommentations examples (product_name, similarity)
+recommentations examples (goodsName, similarity)
 [('[11월 올영픽/토너 250ml증정]바이오더마 하이드라비오 토너 500ml 기획(+토너 250ml 증정)', 1.0),
  ('[스누피키링증정] 아누아 어성초 77 깐달걀 토너 500ml 스누피 한정 기획세트', 1.0),
  ('[쿨링진정]넘버즈인 1번 진정 맑게담은 청초토너 300ml 리필기획(+300ml 증정)', 1.0)]

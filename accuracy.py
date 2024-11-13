@@ -12,8 +12,8 @@ class RecommenderEvaluator:
         for i in range(len(self.df)):
             new_data = self.df[i:i + 1]
             recommendations = self.recommender.fit_and_recommend(new_data=new_data, n_recommendations=3)
-            recommend_product = [product_name for product_name, _ in recommendations]
-            prediction.append(self.hit_rate(new_data['product_name'][i], recommend_product))
+            recommend_product = [goodsName for goodsName, _ in recommendations]
+            prediction.append(self.hit_rate(new_data['goodsName'][i], recommend_product))
 
         return prediction
 
