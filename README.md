@@ -1,2 +1,5 @@
 # OllyMate
-K-Cosmetics Oliveyoung Chatbot
+## **사용법**
+```aiignore
+$ scrapy crawl oliveyoung
+```
