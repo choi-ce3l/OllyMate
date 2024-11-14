@@ -3,16 +3,15 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from scipy.spatial.distance import euclidean
 import os
 
-
 class FastSkincareRecommender:
-    def __init__(self, df, encoded_file="data/encoded_features.csv"): # 이거 나중에 DB로 설정하든 해야할듯?
+    def __init__(self, df, encoded_file="data/encoded_features.csv"):
         self.df = df
         self.encoded_features = None
         self.target = None
         self.mlb_concerns = MultiLabelBinarizer(sparse_output=False)
         self.mlb_function = MultiLabelBinarizer(sparse_output=False)
         self.mlb_formulation = MultiLabelBinarizer(sparse_output=False)
-        self.encoded_file = encoded_file # 인코딩 파일 저장 경로 설정
+        self.encoded_file = encoded_file
 
     def encode_features(self, save_to_file=True):
         """특성을 인코딩하고, 필요하면 feature_matrix 파일에 저장"""
@@ -24,7 +23,7 @@ class FastSkincareRecommender:
             skintype_encoded = pd.get_dummies(self.df['skintype'], prefix='type')
             skinton_encoded = pd.get_dummies(self.df['skinton'], prefix='tone')
             pricecategory_encoded = pd.get_dummies(self.df['price_category'], prefix='price_category')
-            category_encoded=pd.get_dummies(self.df['category'], prefix='category')
+            category_encoded = pd.get_dummies(self.df['category'], prefix='category')
 
             # MultiLabelBinarizer로 인코딩
             concerns_encoded = self._multi_label_encode(self.df['skinconcerns'], self.mlb_concerns, 'concern')
@@ -33,8 +32,8 @@ class FastSkincareRecommender:
 
             # 모든 인코딩된 특성 결합
             self.encoded_features = pd.concat(
-                [category_encoded, skintype_encoded, skinton_encoded, pricecategory_encoded, concerns_encoded, function_encoded,
-                 formulation_encoded],
+                [category_encoded, skintype_encoded, skinton_encoded, pricecategory_encoded, concerns_encoded,
+                 function_encoded, formulation_encoded],
                 axis=1
             ).fillna(0)
 
@@ -70,10 +69,11 @@ class FastSkincareRecommender:
 
         concerns_encoded = self._multi_label_encode(new_data['skinconcerns'], self.mlb_concerns, 'concern')
         function_encoded = self._multi_label_encode(new_data['function'], self.mlb_function, 'function')
-        formulation_encoded = self._multi_label_encode(new_data['formulation'], self.mlb_formulation,'formulation')
+        formulation_encoded = self._multi_label_encode(new_data['formulation'], self.mlb_formulation, 'formulation')
 
         new_encoded_features = pd.concat(
-            [category_encoded, skintype_encoded, skinton_encoded, pricecategory_encoded, concerns_encoded, function_encoded,
+            [category_encoded, skintype_encoded, skinton_encoded, pricecategory_encoded, concerns_encoded,
+             function_encoded,
              formulation_encoded],
             axis=1
         ).reindex(columns=self.encoded_features.columns, fill_value=0).fillna(0)
@@ -94,10 +94,29 @@ class FastSkincareRecommender:
         )
 
     def calculate_similarity(self, item_vector, n_recommendations=5):
-        """유사도 계산"""
+        """유사도 계산 - 중복 제품 제거 로직 추가"""
         distances = self.encoded_features.apply(lambda row: euclidean(item_vector, row.values.astype(float)), axis=1)
         similarities = 1 / (1 + distances) # 거리가 가까운 순으로, 1에 가까울수록 유사한 제품
-        return sorted(enumerate(similarities), key=lambda x: x[1], reverse=True)[:n_recommendations] # 현재 순서가 판매량 순서이기 때문에 순서대로 저장
+
+        # 제품명과 유사도를 함께 저장
+        similarity_with_names = list(zip(self.target, similarities))
+
+        # 이미 추천된 제품명을 저장할 집합
+        recommended_names = set()
+        unique_recommendations = []
+
+        # 유사도 순으로 정렬하고 중복되지 않는 제품만 선택
+        sorted_recommendations = sorted(similarity_with_names, key=lambda x: x[1], reverse=True)
+
+        for product_name, similarity in sorted_recommendations:
+            if product_name not in recommended_names:
+                recommended_names.add(product_name)
+                unique_recommendations.append((product_name, similarity))
+
+                if len(unique_recommendations) >= n_recommendations:
+                    break
+
+        return unique_recommendations
 
     def fit_and_recommend(self, item_idx=None, new_data=None, n_recommendations=3):
         self.encode_features()
@@ -109,9 +128,7 @@ class FastSkincareRecommender:
         else:
             raise ValueError("item_idx, new_data 중 하나는 입력해야 합니다.")
 
-        recommendations = self.calculate_similarity(item_vector, n_recommendations)
-        return [(self.target.iloc[idx], similarity) for idx, similarity in recommendations]
-
+        return self.calculate_similarity(item_vector, n_recommendations)
 
 
 '''
