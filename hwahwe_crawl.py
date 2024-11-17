@@ -26,12 +26,14 @@ def hwahae_crawl(goodsData):
 
             # 화해 검색
             url = f'https://www.hwahae.co.kr/search?q={preprocessed_name}'
-
+            
+            # 상품명 확인
             print(preprocessed_name)
 
             res = requests.get(url)
             soup = BeautifulSoup(res.text, 'html.parser')
-
+            
+            # 응답 확인
             print("res", res)
 
             # 검색 후 첫번째 상품 url 추출
