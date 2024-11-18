@@ -39,7 +39,7 @@ class RecommendSystem:
         :return: List of recommendations with product names and similarity scores.
         """
         # Define the user profile data
-        user_profile = [{'skintype': skintype, 'skintone': skintone, 'skinconcerns': skinconcern,
+        user_profile = [{'skintype': skintype, 'skintone': skintone, 'skinconcern': skinconcern,
                          'price_category': price_category, 'category': category,
                          'function': function, 'formulation': formulation}]
 
