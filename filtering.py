@@ -21,18 +21,18 @@ class FastSkincareRecommender:
         else:
             # 각 특성 인코딩
             skintype_encoded = pd.get_dummies(self.df['skintype'], prefix='type')
-            skinton_encoded = pd.get_dummies(self.df['skinton'], prefix='tone')
+            skintone_encoded = pd.get_dummies(self.df['skintone'], prefix='tone')
             pricecategory_encoded = pd.get_dummies(self.df['price_category'], prefix='price_category')
             category_encoded = pd.get_dummies(self.df['category'], prefix='category')
 
             # MultiLabelBinarizer로 인코딩
-            concerns_encoded = self._multi_label_encode(self.df['skinconcerns'], self.mlb_concerns, 'concern')
+            concerns_encoded = self._multi_label_encode(self.df['skinconcern'], self.mlb_concerns, 'concern')
             function_encoded = self._multi_label_encode(self.df['function'], self.mlb_function, 'function')
             formulation_encoded = self._multi_label_encode(self.df['formulation'], self.mlb_formulation, 'formulation')
 
             # 모든 인코딩된 특성 결합
             self.encoded_features = pd.concat(
-                [category_encoded, skintype_encoded, skinton_encoded, pricecategory_encoded, concerns_encoded,
+                [category_encoded, skintype_encoded, skintone_encoded, pricecategory_encoded, concerns_encoded,
                  function_encoded, formulation_encoded],
                 axis=1
             ).fillna(0)
@@ -63,16 +63,16 @@ class FastSkincareRecommender:
     def encode_new_data(self, new_data):
         """새로운 데이터 인코딩 single user profile"""
         skintype_encoded = pd.get_dummies(new_data['skintype'], prefix='type')
-        skinton_encoded = pd.get_dummies(new_data['skinton'], prefix='tone')
+        skintone_encoded = pd.get_dummies(new_data['skintone'], prefix='tone')
         pricecategory_encoded = pd.get_dummies(new_data['price_category'], prefix='price_category')
         category_encoded = pd.get_dummies(new_data['category'], prefix='category')
 
-        concerns_encoded = self._multi_label_encode(new_data['skinconcerns'], self.mlb_concerns, 'concern')
+        concerns_encoded = self._multi_label_encode(new_data['skinconcern'], self.mlb_concerns, 'concern')
         function_encoded = self._multi_label_encode(new_data['function'], self.mlb_function, 'function')
         formulation_encoded = self._multi_label_encode(new_data['formulation'], self.mlb_formulation, 'formulation')
 
         new_encoded_features = pd.concat(
-            [category_encoded, skintype_encoded, skinton_encoded, pricecategory_encoded, concerns_encoded,
+            [category_encoded, skintype_encoded, skintone_encoded, pricecategory_encoded, concerns_encoded,
              function_encoded,
              formulation_encoded],
             axis=1
