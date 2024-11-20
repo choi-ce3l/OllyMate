@@ -12,13 +12,13 @@ class OliveyoungCrawlerPipeline:
     def open_spider(self, spider):
         # 스파이더가 시작될 때 CSV 파일 열기
         self.file = open('all_data.csv', 'w', newline='', encoding='utf-8')
-        self.writer = csv.DictWriter(self.file, fieldnames=['goodsNo', 'goodsName', 'category', 'price', 'pricerange', 'purchase_link', 'image_link', 'memberNo', 'skintype', 'skintone', 'skinconcern', 'review', 'rating', 'date', 'rank'])
+        self.writer = csv.DictWriter(self.file, fieldnames=['goodsNo', 'goodsName', 'category', 'price', 'pricerange', 'volume', 'ingredients', 'purchase_link', 'image_link', 'memberNo', 'skintype', 'skintone', 'skinconcern', 'review', 'rating', 'date', 'rank'])
         self.writer.writeheader()
 
     def process_item(self, item, spider):
         # 아이템 데이터 처리 (예: 데이터 클렌징)
 
-        item['price'] = item['price'].replace(',', '')  # 예: 가격에서 쉼표 제거, int로 변환
+        item['price'] = item['price'].replace(',', '')  # 예: 가격에서 쉼표 제거
 
         if int(item['price']) <= 20000:
             item['pricerange'] = '-2'

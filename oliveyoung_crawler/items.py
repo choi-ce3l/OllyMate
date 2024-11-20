@@ -22,3 +22,5 @@ class OliveyoungCrawlerItem(scrapy.Item):
     rating = scrapy.Field()
     date = scrapy.Field()
     rank = scrapy.Field()
+    volume = scrapy.Field()
+    ingredients = scrapy.Field()
