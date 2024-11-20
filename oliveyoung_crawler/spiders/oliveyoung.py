@@ -57,10 +57,28 @@ class OliveyoungSpider(scrapy.Spider):
         price = response.css('span.price-2 strong::text').get()
         image_link = response.css('img#mainImg::attr(src)').get()
 
+        data = {
+            'goodsNo': goodsNo,
+        }
+
+        url = "https://www.oliveyoung.co.kr/store/goods/getGoodsArtcAjax.do"
+        yield scrapy.FormRequest(url, callback=self.info_parse, method="POST", formdata=data, meta={'purchase_link': purchase_link, 'category': category, 'rank': rank, 'goodsNo': goodsNo, 'goodsName': goodsName, 'price': price, 'image_link': image_link})
+
+    def info_parse(self, response):
+        purchase_link = response.meta['purchase_link']
+        category = response.meta['category']
+        rank = response.meta['rank']
+        goodsNo = response.meta['goodsNo']
+        goodsName = response.meta['goodsName']
+        price = response.meta['price']
+        image_link = response.meta['image_link']
+
+        volume = response.css("dt:contains('내용물의 용량 또는 중량') + dd::text").get()
+        ingredients = response.css("dt:contains('화장품법에 따라 기재해야 하는 모든 성분') + dd::text").get()
+
         for i in range(0, 100):
             url = f"https://www.oliveyoung.co.kr/store/goods/getGdasNewListJson.do?goodsNo={goodsNo}&gdasSort=05&itemNo=all_search&pageIdx={i + 1}&colData=&keywordGdasSeqs=&type=&point=&hashTag=&optionValue=&cTypeLength=0"
-            yield scrapy.Request(url, callback=self.parse_review, meta={'purchase_link': purchase_link, 'category': category, 'rank': rank, 'goodsNo': goodsNo, 'goodsName': goodsName, 'price': price, 'image_link': image_link})
-
+            yield scrapy.Request(url, callback=self.parse_review, meta={'purchase_link': purchase_link, 'category': category, 'rank': rank, 'goodsNo': goodsNo, 'goodsName': goodsName, 'price': price, 'image_link': image_link, 'volume': volume, 'ingredients': ingredients})
 
     def parse_review(self, response):
         # item 생성 및 할당
@@ -73,7 +91,8 @@ class OliveyoungSpider(scrapy.Spider):
         item['purchase_link'] = response.meta['purchase_link']
         item['image_link'] = response.meta['image_link']
         item['rank'] = response.meta['rank']
-
+        item['volume'] = response.meta['volume']
+        item['ingredients'] = response.meta['ingredients']
 
         data = response.json()
 
