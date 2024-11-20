@@ -1,4 +1,5 @@
 import pandas as pd
+from scipy.special import dtype
 from sklearn.preprocessing import MultiLabelBinarizer
 from scipy.spatial.distance import euclidean
 import os
@@ -17,7 +18,7 @@ class FastSkincareRecommender:
         """특성을 인코딩하고, 필요하면 feature_matrix 파일에 저장"""
         if os.path.exists(self.encoded_file):
             # 파일이 존재하면 불러오기
-            self.encoded_features = pd.read_csv(self.encoded_file)
+            self.encoded_features = pd.read_csv(self.encoded_file,encoding='utf-8')
         else:
             # 각 특성 인코딩
             skintype_encoded = pd.get_dummies(self.df['skintype'], prefix='type')
@@ -40,7 +41,7 @@ class FastSkincareRecommender:
             # 필요하면 파일로 저장
             if save_to_file:
                 os.makedirs(os.path.dirname(self.encoded_file), exist_ok=True)
-                self.encoded_features.to_csv(self.encoded_file, index=False)
+                self.encoded_features.to_csv(self.encoded_file, index=False,encoding='utf-8')
 
         # 상품명을 타깃 변수로 설정
         self.target = self.df['goodsName'].reindex(self.encoded_features.index)
