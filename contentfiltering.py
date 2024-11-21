@@ -1,5 +1,4 @@
 import pandas as pd
-# from scipy.special import dtype
 from sklearn.preprocessing import MultiLabelBinarizer
 from scipy.spatial.distance import euclidean
 import os
