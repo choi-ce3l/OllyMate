@@ -1,5 +1,5 @@
 import pandas as pd
-from scipy.special import dtype
+# from scipy.special import dtype
 from sklearn.preprocessing import MultiLabelBinarizer
 from scipy.spatial.distance import euclidean
 import os
@@ -23,7 +23,7 @@ class FastSkincareRecommender:
             # 각 특성 인코딩
             skintype_encoded = pd.get_dummies(self.df['skintype'], prefix='type')
             skintone_encoded = pd.get_dummies(self.df['skintone'], prefix='tone')
-            pricecategory_encoded = pd.get_dummies(self.df['price_category'], prefix='price_category')
+            pricecategory_encoded = pd.get_dummies(self.df['pricerange'], prefix='pricerange')
             category_encoded = pd.get_dummies(self.df['category'], prefix='category')
 
             # MultiLabelBinarizer로 인코딩
@@ -33,8 +33,7 @@ class FastSkincareRecommender:
 
             # 모든 인코딩된 특성 결합
             self.encoded_features = pd.concat(
-                [category_encoded, skintype_encoded, skintone_encoded, pricecategory_encoded, concerns_encoded,
-                 function_encoded, formulation_encoded],
+                [category_encoded, skintype_encoded,pricecategory_encoded,concerns_encoded,function_encoded,formulation_encoded, skintone_encoded],
                 axis=1
             ).fillna(0)
 
@@ -50,7 +49,7 @@ class FastSkincareRecommender:
         """멀티 라벨 인코딩 처리 부분"""
         # 혹시 안된 전처리 부분 처리하기 위해
         list_of_lists = column.apply(
-            lambda x: x.split(',') if pd.notna(x) and x != '' else []
+            lambda x: x.split(' ') if pd.notna(x) and x != '' else []
         ).tolist()
 
         # 멀티 라벨 바이너리로 인코딩
@@ -65,7 +64,7 @@ class FastSkincareRecommender:
         """새로운 데이터 인코딩 single user profile"""
         skintype_encoded = pd.get_dummies(new_data['skintype'], prefix='type')
         skintone_encoded = pd.get_dummies(new_data['skintone'], prefix='tone')
-        pricecategory_encoded = pd.get_dummies(new_data['price_category'], prefix='price_category')
+        pricecategory_encoded = pd.get_dummies(new_data['pricerange'], prefix='pricerange')
         category_encoded = pd.get_dummies(new_data['category'], prefix='category')
 
         concerns_encoded = self._multi_label_encode(new_data['skinconcern'], self.mlb_concerns, 'concern')
@@ -73,28 +72,13 @@ class FastSkincareRecommender:
         formulation_encoded = self._multi_label_encode(new_data['formulation'], self.mlb_formulation, 'formulation')
 
         new_encoded_features = pd.concat(
-            [category_encoded, skintype_encoded, skintone_encoded, pricecategory_encoded, concerns_encoded,
-             function_encoded,
-             formulation_encoded],
+            [category_encoded, skintype_encoded,pricecategory_encoded,concerns_encoded,function_encoded,formulation_encoded, skintone_encoded],
             axis=1
         ).reindex(columns=self.encoded_features.columns, fill_value=0).fillna(0)
 
         return new_encoded_features.iloc[0].values.astype(float)
 
-    def _multi_label_encode_series(self, series, mlb, prefix):
-        """멀티 라벨 인코딩_새로운 유저와 데이터 받는 형식이 달라서 별도 함수 처리"""
-        list_of_lists = series.apply(
-            lambda x: x.split(',') if pd.notna(x) and x != '' else []
-        ).tolist()
-
-        encoded_array = mlb.transform(list_of_lists)
-        return pd.DataFrame(
-            encoded_array,
-            columns=[f'{prefix}_{c}' for c in mlb.classes_],
-            index=series.index
-        )
-
-    def calculate_similarity(self, item_vector, n_recommendations=5):
+    def calculate_similarity(self, item_vector, n_recommendations=6):
         """유사도 계산 - 중복 제품 제거 로직 추가"""
         distances = self.encoded_features.apply(lambda row: euclidean(item_vector, row.values.astype(float)), axis=1)
         similarities = 1 / (1 + distances) # 거리가 가까운 순으로, 1에 가까울수록 유사한 제품
@@ -119,7 +103,7 @@ class FastSkincareRecommender:
 
         return unique_recommendations
 
-    def fit_and_recommend(self, item_idx=None, new_data=None, n_recommendations=3):
+    def fit_and_recommend(self, item_idx=None, new_data=None, n_recommendations=6):
         self.encode_features()
 
         if new_data is not None: # 새로운 데이터가 아니면 밑에거 실행 -> 새로운 유저

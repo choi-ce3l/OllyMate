@@ -28,7 +28,6 @@ class RecommendSystem:
                                    pricerange='2-3', category='스킨/토너', function='수분', formulation='가벼운 제형'):
         """
         Get recommendations based on a new user profile.
-
         :param skintype: User's skin type (default is '복합성').
         :param skintone: User's skin tone (default is '가을웜톤').
         :param skinconcern: User's skin concerns (default is '트러블 모공').
