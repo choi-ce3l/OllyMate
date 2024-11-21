@@ -18,7 +18,7 @@ def preprocessing(file_path):
     # 가격 범주 설정 및 가격 카테고리 생성
     bins = [0, 20000, 30000, 50000, float('inf')]
     labels = ['2이하', '2-3', '3-5', '5이상']
-    df['price_category'] = pd.cut(df['price'], bins=bins, labels=labels)
+    df['pricerange'] = pd.cut(df['price'], bins=bins, labels=labels)
 
     # 리스트를 문자열로 변환
     for col in ['skintype', 'skintone', 'skinconcern','function','formulation']:
