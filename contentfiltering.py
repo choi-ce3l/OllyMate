@@ -42,7 +42,7 @@ class FastSkincareRecommender:
                 self.encoded_features.to_csv(self.encoded_file, index=False,encoding='utf-8')
 
         # 상품명을 타깃 변수로 설정
-        self.target = self.df['goodsName'].reindex(self.encoded_features.index)
+        self.target = self.df['goodsNo'].reindex(self.encoded_features.index)
 
     def _multi_label_encode(self, column, mlb, prefix):
         """멀티 라벨 인코딩 처리 부분"""
