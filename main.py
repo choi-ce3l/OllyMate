@@ -1,8 +1,6 @@
 import streamlit as st
-
+from recommendsystem import *
 from search_db import search_db
-from chatbot import chatbot_response
-import webbrowser
 
 with st.sidebar:
     # Streamlit UI 구성
@@ -73,10 +71,10 @@ with st.sidebar:
             "skintype": skin_type,
             "skintone": skin_tone,
             "skinconcerns": " ".join(skin_concern),
+            "pricerange": pricerange,
+            "category": category,
             "function": product_function,
             "formulation": product_texture,
-            "category": category,
-            "pricerange": pricerange,
         }
 
         st.write(user_data)
@@ -99,14 +97,6 @@ with st.sidebar:
                 st.error("모든 선택지를 설정한 후 다시 시도해주세요!")
 
 
-recommand_list = [
-    ('A000000186465', 1.0),
-    ('A000000155321', 1.0),
-    ('A000000155320', 1.0),
-    ('A000000211127', 1.0),
-    ('A000000210068', 1.0),
-    ('A000000141900', 1.0)
-]
 
 def get_product_info(recommand_list):
     recommand_list = [i[0] for i in recommand_list]
@@ -167,8 +157,11 @@ def generate_response(user_message):
 
 # 버튼 클릭으로 제품 추천 메시지 추가
 if recommand_button:
-    product_info = get_product_info(recommand_list)
-    add_product_message(product_info[:3])  # 첫 3개의 상품 추천
+    file_path = 'data/cleaned_final_data.csv'
+    system = RecommendSystem(file_path)
+    newuser_recommendations = system.recommend_new_user_profile(skintype=user_data["skintype"], skintone=user_data["skintone"], skinconcern=user_data['skinconcerns'], pricerange=user_data["pricerange"], category=user_data["category"], function=user_data["function"], formulation=user_data["formulation"])
+    recommand_list = get_product_info(newuser_recommendations)
+    add_product_message(recommand_list[:3])  # 첫 3개의 상품 추천
 
 # 사용자 입력 처리
 user_input = st.chat_input("Your message:")
