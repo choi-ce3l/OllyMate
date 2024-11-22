@@ -61,11 +61,26 @@ with st.sidebar:
             index=None,
             placeholder="카테고리"
         )
-        pricerange = st.selectbox(
-            "원하는 가격대를 선택하세요:", ("~2만원", "2만원~3만원", "3만원~5만원", "5만원~"),
+
+        price_options = {
+            "~2만원": "-2",
+            "2만원~3만원": "2-3",
+            "3만원 ~ 5만원": "3-5",
+            "5만원~": "5-"
+        }
+
+        selected_pricerange = st.selectbox(
+            "원하는 가격대를 선택하세요:",
+            options=list(price_options.keys()),
             index=None,
             placeholder="가격대"
         )
+
+        # pricerange 값을 안전하게 가져오기
+        if selected_pricerange:  # 사용자가 선택한 경우
+            pricerange = price_options[selected_pricerange]
+        else:  # 선택하지 않은 경우 기본값 설정
+            pricerange = "미정"  # 원하는 기본값으로 변경 가능
 
         user_data = {
             "skintype": skin_type,
@@ -157,11 +172,22 @@ def generate_response(user_message):
 
 # 버튼 클릭으로 제품 추천 메시지 추가
 if recommand_button:
-    file_path = 'data/cleaned_final_data.csv'
-    system = RecommendSystem(file_path)
-    newuser_recommendations = system.recommend_new_user_profile(skintype=user_data["skintype"], skintone=user_data["skintone"], skinconcern=user_data['skinconcerns'], pricerange=user_data["pricerange"], category=user_data["category"], function=user_data["function"], formulation=user_data["formulation"])
-    recommand_list = get_product_info(newuser_recommendations)
-    add_product_message(recommand_list[:3])  # 첫 3개의 상품 추천
+    if all(
+            [
+                user_data["formulation"],  # 제형
+                user_data["function"],  # 기능
+                user_data["skinconcerns"],  # 피부 고민
+                user_data["skintone"],  # 피부 톤
+                user_data["skintype"],  # 피부 타입
+                user_data['category'],  # 카테고리
+                user_data['pricerange']  # 가격대
+            ]
+    ):
+        file_path = 'data/cleaned_final_data.csv'
+        system = RecommendSystem(file_path)
+        newuser_recommendations = system.recommend_new_user_profile(skintype=user_data["skintype"], skintone=user_data["skintone"], skinconcern=user_data['skinconcerns'], pricerange=user_data["pricerange"], category=user_data["category"], function=user_data["function"], formulation=user_data["formulation"])
+        recommand_list = get_product_info(newuser_recommendations)
+        add_product_message(recommand_list[:3])  # 첫 3개의 상품 추천
 
 # 사용자 입력 처리
 user_input = st.chat_input("Your message:")
