@@ -11,6 +11,7 @@ import pymysql
 from datetime import datetime
 import faiss
 import numpy as np
+import pickle
 
 
 def get_database():
@@ -57,6 +58,21 @@ def create_doc_id(docs):
 
     for i in range(len(docs)):
         docs[i].metadata['id'] = f'{today}--001--00{i}'
+
+def save_docs_and_contents(docs, contents):
+
+    # 경로 지정
+    folder_path = "objects_docs"
+
+    # 디렉토리가 존재하지 않으면 생성
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    # docs와 contents를 지정된 경로에 저장
+    with open(os.path.join(folder_path, "docs.pkl"), "wb") as f:
+        pickle.dump(docs, f)
+    with open(os.path.join(folder_path, "contents.pkl"), "wb") as f:
+        pickle.dump(contents, f)
 
 def create_embedded_documents(contents, model, batch_size):
 
@@ -164,6 +180,8 @@ if __name__ == '__main__':
     df = get_database()
     docs, contents = load_documents(df, 'review')
     create_doc_id(docs)
+
+    save_docs_and_contents(docs, contents) # Save docs and contents for future use
 
     # 3. 임베딩
     embedded_docs = create_embedded_documents(contents, 'text-embedding-3-large', 128)
