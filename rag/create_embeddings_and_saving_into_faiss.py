@@ -130,7 +130,7 @@ def create_embedded_documents(contents, model, batch_size):
 
 def create_faiss_index(embedded_docs):
 
-    temp_vectors = np.array(embedded_docs=embedded_docs, dtype=np.float32)
+    temp_vectors = np.array(embedded_docs, dtype=np.float32)
 
     #index 생성
     nlist = 512
