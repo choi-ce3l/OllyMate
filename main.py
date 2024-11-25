@@ -121,7 +121,7 @@ if "messages" not in st.session_state:
 st.write(st.session_state.messages)
 
 # db에서 로딩된 df에서 product_info 생성
-def searching_db(df, recommend_list):
+def db_to_df(df, recommend_list):
     product_info = []
     for goodsName in recommend_list:
         filted_df = df[df['goodsName'] == goodsName]
@@ -140,7 +140,7 @@ def searching_db(df, recommend_list):
 
 def get_product_info(recommand_list):
     recommand_list = [i[0] for i in recommand_list]
-    product_info = searching_db(df, recommand_list)
+    product_info = db_to_df(df, recommand_list)
     return product_info
 
 # 메시지 추가 함수
