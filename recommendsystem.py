@@ -3,10 +3,10 @@ from contentfiltering import *
 import pandas as pd
 
 class RecommendSystem:
-    def __init__(self, file_path):
+    def __init__(self, df):
         # Load data and initialize the recommender
         # self.df = preprocessing(file_path) # 전처리가 필요한 경우 사용
-        self.df=pd.read_csv(file_path) # 전처리가 필요없는 경우 사용
+        self.df=df # 전처리가 필요없는 경우 사용
         self.recommender = FastSkincareRecommender(self.df)
 
     def recommend_existing_product(self, idx):

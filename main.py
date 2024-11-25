@@ -1,6 +1,9 @@
 import streamlit as st
 from recommendsystem import *
-from search_db import search_db
+from search_db import search_db, mk_df
+from dotenv import load_dotenv
+
+load_dotenv()
 
 with st.sidebar:
     # Streamlit UI 구성
@@ -92,7 +95,7 @@ with st.sidebar:
             "formulation": product_texture,
         }
 
-        st.write(user_data)
+        # st.write(user_data)
 
         # 추천 버튼
         recommand_button = st.form_submit_button("추천받기")
@@ -123,33 +126,34 @@ def get_product_info(recommand_list):
 if "messages" not in st.session_state:
     st.session_state.messages = []  # 메시지 기록 초기화
 
+st.write(st.session_state.messages)
 # 샘플 데이터
-product_info = [
-    {
-        "image_link": "https://via.placeholder.com/150",
-        "goodsName": "상품1",
-        "price": 10000,
-        "function": "보습",
-        "formulation": "크림",
-        "purchase_link": "https://example.com/product1"
-    },
-    {
-        "image_link": "https://via.placeholder.com/150",
-        "goodsName": "상품2",
-        "price": 20000,
-        "function": "미백",
-        "formulation": "로션",
-        "purchase_link": "https://example.com/product2"
-    },
-    {
-        "image_link": "https://via.placeholder.com/150",
-        "goodsName": "상품3",
-        "price": 30000,
-        "function": "진정",
-        "formulation": "세럼",
-        "purchase_link": "https://example.com/product3"
-    }
-]
+# product_info = [
+#     {
+#         "image_link": "https://via.placeholder.com/150",
+#         "goodsName": "상품1",
+#         "price": 10000,
+#         "function": "보습",
+#         "formulation": "크림",
+#         "purchase_link": "https://example.com/product1"
+#     },
+#     {
+#         "image_link": "https://via.placeholder.com/150",
+#         "goodsName": "상품2",
+#         "price": 20000,
+#         "function": "미백",
+#         "formulation": "로션",
+#         "purchase_link": "https://example.com/product2"
+#     },
+#     {
+#         "image_link": "https://via.placeholder.com/150",
+#         "goodsName": "상품3",
+#         "price": 30000,
+#         "function": "진정",
+#         "formulation": "세럼",
+#         "purchase_link": "https://example.com/product3"
+#     }
+# ]
 
 # 메시지 추가 함수
 def add_product_message(product_list):
@@ -160,15 +164,7 @@ def add_product_message(product_list):
         "content": product_list
     })
 
-# 사용자 입력에 대한 답변 생성 함수
-def generate_response(user_message):
-    """사용자 메시지에 대한 간단한 답변 생성"""
-    if "추천" in user_message:
-        return "추천받기 버튼을 눌러서 상품을 확인해 보세요!"
-    elif "안녕" in user_message:
-        return "안녕하세요! 무엇을 도와드릴까요?"
-    else:
-        return "죄송해요, 그 내용을 잘 이해하지 못했어요. 다시 말씀해 주시겠어요?"
+df = mk_df()
 
 # 버튼 클릭으로 제품 추천 메시지 추가
 if recommand_button:
@@ -184,10 +180,16 @@ if recommand_button:
             ]
     ):
         file_path = 'data/cleaned_final_data.csv'
-        system = RecommendSystem(file_path)
+        system = RecommendSystem(df)
         newuser_recommendations = system.recommend_new_user_profile(skintype=user_data["skintype"], skintone=user_data["skintone"], skinconcern=user_data['skinconcerns'], pricerange=user_data["pricerange"], category=user_data["category"], function=user_data["function"], formulation=user_data["formulation"])
         recommand_list = get_product_info(newuser_recommendations)
         add_product_message(recommand_list[:3])  # 첫 3개의 상품 추천
+
+# 사용자 입력에 대한 답변 생성 함수
+def generate_response(user_message):
+    """사용자 메시지에 대한 간단한 답변 생성"""
+    # 유저 쿼리, goodsNo, history
+    return "진정에도 좋은 제품을 찾고 계신 것 같네요! 여러 리뷰에서 언급된 바에 따르면, 또한, 장미수와 알란토인 성분이 포함된 제품은 피부 진정에 효과적이며, 수분 공급도 뛰어나서 건조해지지 않는다고 하네요. 지성 피부를 가지신 사용자님께는 이러한 가벼운 제형의 진정 토너가 잘 맞을 것 같습니다. 특히, 수분 공급과 진정 효과를 동시에 원하신다면 추천드려요!"
 
 # 사용자 입력 처리
 user_input = st.chat_input("Your message:")
