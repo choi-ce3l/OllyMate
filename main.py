@@ -1,6 +1,6 @@
 import streamlit as st
 from recommendsystem import *
-from search_db import search_db
+from search_db import mk_df
 from dotenv import load_dotenv
 
 load_dotenv()
