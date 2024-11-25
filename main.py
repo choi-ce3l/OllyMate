@@ -49,9 +49,8 @@ with st.sidebar:
             ],
             placeholder="피부 고민"
         )
-        product_function = st.selectbox(
-            "원하는 화장품 기능을 선택하세요:", ("수분", "진정", "미백", "탄력"),
-            index=None,
+        product_function = st.multiselect(
+            "원하는 화장품 기능을 선택하세요:", ["수분", "진정", "미백", "탄력"],
             placeholder="기능"
         )
         product_texture = st.selectbox(
@@ -91,7 +90,7 @@ with st.sidebar:
             "skinconcerns": " ".join(skin_concern),
             "pricerange": pricerange,
             "category": category,
-            "function": product_function,
+            "function": " ".join(product_function),
             "formulation": product_texture,
         }
 
@@ -115,45 +114,34 @@ with st.sidebar:
                 st.error("모든 선택지를 설정한 후 다시 시도해주세요!")
 
 
-
-def get_product_info(recommand_list):
-    recommand_list = [i[0] for i in recommand_list]
-    product_info = search_db(recommand_list)
-    return product_info
-
-
 # 세션 상태 초기화
 if "messages" not in st.session_state:
     st.session_state.messages = []  # 메시지 기록 초기화
 
 st.write(st.session_state.messages)
-# 샘플 데이터
-# product_info = [
-#     {
-#         "image_link": "https://via.placeholder.com/150",
-#         "goodsName": "상품1",
-#         "price": 10000,
-#         "function": "보습",
-#         "formulation": "크림",
-#         "purchase_link": "https://example.com/product1"
-#     },
-#     {
-#         "image_link": "https://via.placeholder.com/150",
-#         "goodsName": "상품2",
-#         "price": 20000,
-#         "function": "미백",
-#         "formulation": "로션",
-#         "purchase_link": "https://example.com/product2"
-#     },
-#     {
-#         "image_link": "https://via.placeholder.com/150",
-#         "goodsName": "상품3",
-#         "price": 30000,
-#         "function": "진정",
-#         "formulation": "세럼",
-#         "purchase_link": "https://example.com/product3"
-#     }
-# ]
+
+# db에서 로딩된 df에서 product_info 생성
+def searching_db(df, recommend_list):
+    product_info = []
+    for goodsName in recommend_list:
+        filted_df = df[df['goodsName'] == goodsName]
+        # print(filted_df['price'].values[0])
+        product_info.append(
+            {
+                "goodsName": goodsName,
+                "price": filted_df['price'].values[0],
+                "function": filted_df['function'].values[0],
+                "formulation": filted_df['formulation'].values[0],
+                "purchase_link": filted_df['purchase_link'].values[0],
+                "image_link": filted_df['image_link'].values[0],
+            }
+        )
+    return product_info
+
+def get_product_info(recommand_list):
+    recommand_list = [i[0] for i in recommand_list]
+    product_info = searching_db(df, recommand_list)
+    return product_info
 
 # 메시지 추가 함수
 def add_product_message(product_list):
@@ -164,7 +152,14 @@ def add_product_message(product_list):
         "content": product_list
     })
 
-df = mk_df()
+# recommend system 객체 생성
+@st.cache_data # loading된 dataframe을 캐시에 저장
+def load_data():
+    df = mk_df()
+    return df
+
+df = load_data()
+system = RecommendSystem(df)
 
 # 버튼 클릭으로 제품 추천 메시지 추가
 if recommand_button:
@@ -179,16 +174,14 @@ if recommand_button:
                 user_data['pricerange']  # 가격대
             ]
     ):
-        file_path = 'data/cleaned_final_data.csv'
-        system = RecommendSystem(df)
         newuser_recommendations = system.recommend_new_user_profile(skintype=user_data["skintype"], skintone=user_data["skintone"], skinconcern=user_data['skinconcerns'], pricerange=user_data["pricerange"], category=user_data["category"], function=user_data["function"], formulation=user_data["formulation"])
         recommand_list = get_product_info(newuser_recommendations)
         add_product_message(recommand_list[:3])  # 첫 3개의 상품 추천
 
 # 사용자 입력에 대한 답변 생성 함수
-def generate_response(user_message):
-    """사용자 메시지에 대한 간단한 답변 생성"""
-    # 유저 쿼리, goodsNo, history
+def generate_response(user_message, product_info, user_data, history):
+    # product_info -> retriever 생성
+    # 생성된 retriever에서 출력된 context, user_data, history
     return "진정에도 좋은 제품을 찾고 계신 것 같네요! 여러 리뷰에서 언급된 바에 따르면, 또한, 장미수와 알란토인 성분이 포함된 제품은 피부 진정에 효과적이며, 수분 공급도 뛰어나서 건조해지지 않는다고 하네요. 지성 피부를 가지신 사용자님께는 이러한 가벼운 제형의 진정 토너가 잘 맞을 것 같습니다. 특히, 수분 공급과 진정 효과를 동시에 원하신다면 추천드려요!"
 
 # 사용자 입력 처리
