@@ -6,48 +6,53 @@ from langchain.retrievers.document_compressors import LLMChainExtractor
 from langchain_openai import ChatOpenAI
 import pickle
 
+
 def load_docs_object():
     with open("objects_docs/docs.pkl", "rb") as f:
         docs = pickle.load(f)
     return docs
 
+
 def load_vectorstore(model, folder_path):
-    
     # Initialize embeddings model
     embeddings = OpenAIEmbeddings(model=model)
 
     loaded_docs_db = FAISS.load_local(
-    folder_path=folder_path,
-    index_name='docs_faiss',
-    embeddings=embeddings,
-    allow_dangerous_deserialization=True,
-)
+        folder_path=folder_path,
+        index_name='docs_faiss',
+        embeddings=embeddings,
+        allow_dangerous_deserialization=True,
+    )
     return loaded_docs_db
 
-def get_recommended_product_objects(docs, recommended_goodsNo):
+
+def get_recommended_product_objects(docs, recommended_goodsName):
     docs_of_recommended_product = []
     contents_of_recommended_product = []
     for doc in docs:
-        if doc.metadata['goodsNo'] == f'{recommended_goodsNo}':
+        if doc.metadata['goodsName'] == recommended_goodsName:
             docs_of_recommended_product.append(doc)
             contents_of_recommended_product.append(doc.page_content)
 
     return docs_of_recommended_product, contents_of_recommended_product
 
-def build_emsemble_retriever(docs_of_recommended_product, llm_model, loaded_docs_db, recommended_goodsNo, user_data):
-# def build_emsemble_retriever(docs_of_recommended_product, loaded_docs_db, recommended_goodsNo, user_data):
+
+def build_emsemble_retriever(docs_of_recommended_product, llm_model, loaded_docs_db, recommended_goodsName, user_data):
+    # def build_emsemble_retriever(docs_of_recommended_product, loaded_docs_db, recommended_goodsNo, user_data):
 
     # sparse retriever 생성
-    bm25_retriever = BM25Retriever.from_documents(docs_of_recommended_product) # BM25Retriever에 doc 넣어서 바로 쿼리 진행하는 방식 (db x, 메모리 o)
+    bm25_retriever = BM25Retriever.from_documents(
+        docs_of_recommended_product)  # BM25Retriever에 doc 넣어서 바로 쿼리 진행하는 방식 (db x, 메모리 o)
     bm25_retriever.k = 5
 
     # dense retriever with compression 생성
-    mmr_retriever= loaded_docs_db.as_retriever(
-            search_type="mmr",
-            search_kwargs={'k': 5,
-                        'fetch_k' : 300,
-                        'lambda_mult' :0.25,
-                        'filter':{'goodsNo': recommended_goodsNo, 'skintype': user_data['skintype']}}) # product = goodsNo
+    mmr_retriever = loaded_docs_db.as_retriever(
+        search_type="mmr",
+        search_kwargs={'k': 5,
+                       'fetch_k': 300,
+                       'lambda_mult': 0.25,
+                       'filter': {'goodsName': recommended_goodsName,
+                                  'skintype': user_data['skintype']}})  # product = goodsNo
 
     llm = ChatOpenAI(temperature=0, model=llm_model)
     compressor = LLMChainExtractor.from_llm(llm)
@@ -65,13 +70,12 @@ def build_emsemble_retriever(docs_of_recommended_product, llm_model, loaded_docs
     )
 
     return ensemble_retriever
-    
-def invoke_user_query(retriever, user_query):
 
+
+def invoke_user_query(retriever, user_query):
     result = retriever.invoke(user_query)
 
     return result
-
 
 # # 실행 코드
 # # 1. 사용자 정보 로드
