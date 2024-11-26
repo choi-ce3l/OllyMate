@@ -113,7 +113,7 @@ with st.sidebar:
                 ]
             ):
                 st.error("모든 선택지를 설정한 후 다시 시도해주세요!")
-
+    # st.write(user_data)
 
 # 세션 상태 초기화
 if "messages" not in st.session_state:
@@ -190,7 +190,7 @@ def generate_response(user_message, recommend_list, user_data, history):
     context = []
     num = 0
     for i in recommend_list:
-        reviews = retriever(user_query=user_message, recommended_goodsNo=i, user_data=user_data)
+        reviews = retriever(user_query=user_message, recommended_goodsName=i, user_data=user_data)
         context.append(
                 {
                    f"{num+1}번째 추천": reviews
@@ -250,3 +250,4 @@ for message in st.session_state.messages:
     elif message["type"] == "text":
         with st.chat_message(message["role"]):
             st.write(message["content"])
+# st.write(st.session_state.messages)

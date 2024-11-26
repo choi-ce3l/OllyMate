@@ -4,14 +4,14 @@ from rag.retriever import *
 from dotenv import load_dotenv
 
 
-def retriever(user_query, recommended_goodsNo, user_data):
+def retriever(user_query, recommended_goodsName, user_data):
     load_dotenv()
 
     docs = load_docs_object()
     loaded_docs_db = load_vectorstore('text-embedding-3-large', 'faiss_db_openai_allcategory_final')
 
-    docs_of_recommended_product, contents_of_recommended_product = get_recommended_product_objects(docs, recommended_goodsNo)
-    retriever = build_emsemble_retriever(docs_of_recommended_product, "gpt-4o-mini", loaded_docs_db, recommended_goodsNo, user_data)
+    docs_of_recommended_product, contents_of_recommended_product = get_recommended_product_objects(docs, recommended_goodsName)
+    retriever = build_emsemble_retriever(docs_of_recommended_product, "gpt-4o-mini", loaded_docs_db, recommended_goodsName, user_data)
 
     result_contexts = retriever.invoke(user_query)
     result_contexts = [i.page_content for i in result_contexts]
