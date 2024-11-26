@@ -2,6 +2,7 @@ import streamlit as st
 from recommendsystem import *
 from search_db import mk_df
 from dotenv import load_dotenv
+from chatbot_response import *
 
 load_dotenv()
 
@@ -117,8 +118,9 @@ with st.sidebar:
 # 세션 상태 초기화
 if "messages" not in st.session_state:
     st.session_state.messages = []  # 메시지 기록 초기화
-
-st.write(st.session_state.messages)
+# 추천 제품 목록
+if "newuser_recommendations" not in st.session_state:
+    st.session_state.newuser_recommendations = None
 
 # db에서 로딩된 df에서 product_info 생성
 def db_to_df(df, recommend_list):
@@ -134,13 +136,15 @@ def db_to_df(df, recommend_list):
                 "formulation": filted_df['formulation'].values[0],
                 "purchase_link": filted_df['purchase_link'].values[0],
                 "image_link": filted_df['image_link'].values[0],
+                "volume": filted_df['volume'].values[0],
+                'ingrediaents': filted_df['ingredients'].values[0],
             }
         )
     return product_info
 
-def get_product_info(recommand_list):
-    recommand_list = [i[0] for i in recommand_list]
-    product_info = db_to_df(df, recommand_list)
+def get_product_info(recommend_list):
+    recommend_list = [i[0] for i in recommend_list]
+    product_info = db_to_df(df, recommend_list)
     return product_info
 
 # 메시지 추가 함수
@@ -151,6 +155,8 @@ def add_product_message(product_list):
         "type": "product",
         "content": product_list
     })
+
+st.write(st.session_state.messages)
 
 # recommend system 객체 생성
 @st.cache_data # loading된 dataframe을 캐시에 저장
@@ -174,15 +180,28 @@ if recommand_button:
                 user_data['pricerange']  # 가격대
             ]
     ):
-        newuser_recommendations = system.recommend_new_user_profile(skintype=user_data["skintype"], skintone=user_data["skintone"], skinconcern=user_data['skinconcerns'], pricerange=user_data["pricerange"], category=user_data["category"], function=user_data["function"], formulation=user_data["formulation"])
-        recommand_list = get_product_info(newuser_recommendations)
+        st.session_state.newuser_recommendations = system.recommend_new_user_profile(skintype=user_data["skintype"], skintone=user_data["skintone"], skinconcern=user_data['skinconcerns'], pricerange=user_data["pricerange"], category=user_data["category"], function=user_data["function"], formulation=user_data["formulation"])
+        recommand_list = get_product_info(st.session_state.newuser_recommendations)
         add_product_message(recommand_list[:3])  # 첫 3개의 상품 추천
 
+
 # 사용자 입력에 대한 답변 생성 함수
-def generate_response(user_message, product_info, user_data, history):
-    # product_info -> retriever 생성
+def generate_response(user_message, recommend_list, user_data, history):
+    recommend_list = [i[0] for i in recommend_list[:3]]
+    context = []
+    num = 0
+    for i in recommend_list:
+        reviews = retriever(user_query=user_message, recommended_goodsNo=i, user_data=user_data)
+        context.append(
+                {
+                   f"{num+1}번째 추천": reviews
+                }
+        )
+        num += 1
+
     # 생성된 retriever에서 출력된 context, user_data, history
-    return "진정에도 좋은 제품을 찾고 계신 것 같네요! 여러 리뷰에서 언급된 바에 따르면, 또한, 장미수와 알란토인 성분이 포함된 제품은 피부 진정에 효과적이며, 수분 공급도 뛰어나서 건조해지지 않는다고 하네요. 지성 피부를 가지신 사용자님께는 이러한 가벼운 제형의 진정 토너가 잘 맞을 것 같습니다. 특히, 수분 공급과 진정 효과를 동시에 원하신다면 추천드려요!"
+    response = generate_chat_response(context, user_message, history, user_data)
+    return response
 
 # 사용자 입력 처리
 user_input = st.chat_input("Your message:")
@@ -195,7 +214,7 @@ if user_input:  # 사용자가 메시지를 입력했을 경우
         "content": user_input
     })
     # 답변 생성 및 저장
-    assistant_response = generate_response(user_input)
+    assistant_response = generate_response(user_message=user_input, recommend_list=st.session_state.newuser_recommendations, user_data=user_data, history=st.session_state)
     st.session_state.messages.append({
         "role": "assistant",
         "type": "text",
