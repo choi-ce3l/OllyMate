@@ -156,7 +156,6 @@ def add_product_message(product_list):
         "content": product_list
     })
 
-st.write(st.session_state.messages)
 
 # recommend system 객체 생성
 @st.cache_data # loading된 dataframe을 캐시에 저장

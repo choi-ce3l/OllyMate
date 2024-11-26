@@ -1,6 +1,6 @@
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
-from retriever import *
+from rag.retriever import *
 from dotenv import load_dotenv
 
 
