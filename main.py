@@ -199,8 +199,7 @@ def generate_response(user_message, recommend_list, user_data, history):
         num += 1
 
     # 생성된 retriever에서 출력된 context, user_data, history
-    response = generate_chat_response(context, user_message, history, user_data)
-    return response
+    yield generate_chat_response(context, user_message, history, user_data)
 
 # 사용자 입력 처리
 user_input = st.chat_input("Your message:")
@@ -220,11 +219,15 @@ if user_input:  # 사용자가 메시지를 입력했을 경우
         "content": assistant_response
     })
 
+fixed_container = st.container(border=True)
+
 # 이전 메시지 출력
 for message in st.session_state.messages:
     if message["type"] == "product":
-        product_list = message["content"]
-        with st.chat_message("assistant"):
+        with fixed_container:
+            st.write("**추천목록**")
+            product_list = message["content"]
+            # with st.chat_message("assistant"):
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.image(product_list[0]['image_link'])
@@ -248,6 +251,9 @@ for message in st.session_state.messages:
                 st.write(product_list[2]['formulation'])
                 st.link_button("구매하기", product_list[2]['purchase_link'])
     elif message["type"] == "text":
-        with st.chat_message(message["role"]):
-            st.write(message["content"])
-# st.write(st.session_state.messages)
+        if message["role"] == "user":
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
+        if message["role"] == "assistant":
+            with st.chat_message(message["role"]):
+                st.write_stream(message["content"])
