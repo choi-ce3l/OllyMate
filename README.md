@@ -82,4 +82,5 @@ ENTRYPOINT [ "poetry", "run", "streamlit", "run", "main.py", "--server.port=8501
 ```
 
 ## 실행 화면
-![beauty AI Agent - 시현 영상.gif](../../../Downloads/beauty%20AI%20Agent%20-%20%EC%8B%9C%ED%98%84%20%EC%98%81%EC%83%81.gif)
+![GIFMaker_me (4)](https://github.com/user-attachments/assets/60184b92-8378-4c72-aad3-a94336de1478)
+
