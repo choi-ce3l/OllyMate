@@ -61,5 +61,25 @@ $ streamlit run main.py
 - RAG
   - 사용자 질문에 대해 리뷰에서 참고할 정보가 있다면 사용
 
+## 배포
+- Dockerfile
+```aiignore
+FROM python:3.11
+
+WORKDIR /app
+
+RUN pip install poetry
+
+RUN git clone https://github.com/choi-ce3l/OllyMate.git
+
+WORKDIR /app/OllyMate
+
+RUN poetry update
+
+EXPOSE 8501
+
+ENTRYPOINT [ "poetry", "run", "streamlit", "run", "main.py", "--server.port=8501", "--server.address=0.0.0.0" ]
+```
+
 ## 실행 화면
 ![beauty AI Agent - 시현 영상.gif](../../../Downloads/beauty%20AI%20Agent%20-%20%EC%8B%9C%ED%98%84%20%EC%98%81%EC%83%81.gif)
