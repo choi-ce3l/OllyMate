@@ -80,7 +80,11 @@ EXPOSE 8501
 
 ENTRYPOINT [ "poetry", "run", "streamlit", "run", "main.py", "--server.port=8501", "--server.address=0.0.0.0" ]
 ```
-
+- docker image build
+```aiignore
+$ docker build -t beautyAI_Agent .
+$ docker run -d -p 8501:8501 beautyAI_Agent
+```
 
 ## 실행 화면
 ![GIFMaker_me (4)](https://github.com/user-attachments/assets/60184b92-8378-4c72-aad3-a94336de1478)
