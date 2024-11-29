@@ -22,4 +22,4 @@ template: |
   
   Detailed information on RAGAS score:
   {ragas_info}
-input_variables: ['role','ragas_info']
+input_variables: ['role','ragas_info'] 

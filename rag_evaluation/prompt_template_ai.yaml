@@ -25,4 +25,4 @@ template: |
   Evaluation(scoring) for each aspects should be from 0~10.
   Give scores and briefly explain why each score is given.
 
-input_variables: ['role','ground_truth','user_query','history','user_data','context','answer']
+input_variables: ['role','ground_truth','user_query','history','user_data','context','answer'] 
