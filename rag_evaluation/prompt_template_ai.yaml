@@ -1,0 +1,28 @@
+_type: 'prompt'
+template: |
+  Evaluate RAG in aspects of RAGAS score (context_relevancy, context recall, faithfulness, answer_relevancy) based on the following information:
+
+  # role
+  {role}
+
+  # ground_truth
+  {ground_truth}
+
+  # question
+  사용자 질문:
+  {user_query},
+  추천한 제품과 사용자와의 대화 이력: 
+  {history},
+  사용자 데이터:
+  {user_data}
+
+  # context
+  {context}
+
+  # answer
+  {answer}
+
+  Evaluation(scoring) for each aspects should be from 0~10.
+  Give scores and briefly explain why each score is given.
+
+input_variables: ['role','ground_truth','user_query','history','user_data','context','answer'] 
