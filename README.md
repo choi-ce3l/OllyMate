@@ -23,14 +23,18 @@
    - [OpenAI Documentation](https://beta.openai.com/docs/)
      
 6. **langchain**
-   - 프롬프트 체이닝을 통해 간단한 출력흐름을 구성하여 사용하기 위해 사용 되었습니다.
+   - Langchain 프레임워크으로써 프롬프트 체이닝과 RAG 시스템을 구축을 지원합니다.
    - [LangChain Documentation](https://python.langchain.com/docs/)
-
-7. **streamlit**
+  
+7. **faiss**
+   - Faiss는 임베딩된 문서 벡터를 기반으로 효율적인 유사도 검색을 위한 인덱스를 생성하는 데 사용됩니다.
+   - [Faiss Documentation](https://faiss.ai/index.html)
+      
+8. **streamlit**
    - 웹 애플리케이션을 쉽게 만들고 데이터 시각화 및 사용자 인터페이스 구축을 지원합니다.
    - [Streamlit Documentation](https://docs.streamlit.io/)
   
-8. **pandas**
+9. **pandas**
    - 데이터를 로드하고 전처리하며, DataFrame 형식으로 구조화하여 데이터 변환 및 조작을 용이하게 합니다.
    - [Pandas Documentation](https://pandas.pydata.org/docs/)
 
